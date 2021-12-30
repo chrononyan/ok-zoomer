@@ -17,6 +17,8 @@ program.option(
   DEFAULT_CONFIG_PATH
 );
 
+import calnetCmd from "./calnet/index.js";
+program.addCommand(calnetCmd);
 import configCmd from "./config.js";
 program.addCommand(configCmd);
 

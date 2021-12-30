@@ -24,5 +24,7 @@ module.exports = {
       },
     ],
     "json-files/sort-package-json": "error",
+    // rule was last updated 2019, not really a concern for Node >= 16
+    "node/no-unsupported-features/es-syntax": "off",
   },
 };
