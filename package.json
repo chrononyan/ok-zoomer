@@ -1,0 +1,39 @@
+{
+  "name": "ok-zoomer",
+  "version": "0.1.0",
+  "description": "Automation toolkit for teaching at scale",
+  "homepage": "https://github.com/61c-teach/ok-zoomer#readme",
+  "bugs": {
+    "url": "https://github.com/61c-teach/ok-zoomer/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/61c-teach/ok-zoomer.git"
+  },
+  "license": "MIT",
+  "author": "Jerry Xu <jerryxu@berkeley.edu>",
+  "type": "module",
+  "bin": "./src/cli/index.js",
+  "scripts": {
+    "lint": "eslint . package.json",
+    "lint:fix": "eslint . package.json --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "commander": "^8.3.0",
+    "convict": "^6.2.1",
+    "flat": "^5.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.5.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-json-files": "^1.3.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
