@@ -13,7 +13,7 @@ sub
   .action(async (name, val, opts) => {
     let didSave = false;
     try {
-      let config = loadConfig(opts.config);
+      const config = loadConfig(opts.config);
       if (val) {
         config.set(name, val);
         await saveConfig(opts.config);
@@ -31,7 +31,7 @@ sub
         [name]: val,
       };
     }
-    for (let [eName, eVal] of Object.entries(val)) {
+    for (const [eName, eVal] of Object.entries(val)) {
       console.log(`${eName} = ${eVal === null ? "" : JSON.stringify(eVal)}`);
     }
     if (didSave) {

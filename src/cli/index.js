@@ -16,11 +16,16 @@ program.option(
   "path to config file",
   DEFAULT_CONFIG_PATH
 );
+program.option("-H, --headful", "use a headful browser");
+program.option("--no-headful", "use a headless browser (default)");
+program.option("-q, --quiet", "suppress non-error output");
 
 import calnetCmd from "./calnet/index.js";
 program.addCommand(calnetCmd);
 import configCmd from "./config.js";
 program.addCommand(configCmd);
+import zoomCmd from "./zoom/index.js";
+program.addCommand(zoomCmd);
 
 try {
   await program.parseAsync();

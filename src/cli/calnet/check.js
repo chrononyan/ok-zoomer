@@ -13,9 +13,7 @@ sub
   .name("check")
   .description("check configured CalNet credentials")
   .action(async (opts) => {
-    const page = await browserUtils.spawnPage();
-
-    try {
+    await browserUtils.withBrowser(async ({ page }) => {
       await calnetUtils.gotoWithAuth(page, LOGIN_URL, {
         check: DEST_URL,
         configPath: opts.config,
@@ -23,38 +21,42 @@ sub
 
       console.log("Successfully logged in!");
 
-      let alertElem = await page.$(".content > .alert");
-      if(alertElem) {
-        let alertText = await browserUtils.getText(alertElem);
-        if(alertText.includes("Special Purpose Accounts cannot use this application")) {
+      const alertElem = await page.$(".content > .alert");
+      if (alertElem) {
+        const alertText = await browserUtils.getText(alertElem);
+        if (
+          alertText.includes(
+            "Special Purpose Accounts cannot use this application"
+          )
+        ) {
           console.log("Detected a Special Purpose Account.");
         } else {
           throw new Error(`Unexpected login message: ${alertText}`);
         }
       } else {
-        let rows = [];
-        for(let rowElem of await page.$$(".content .col-sm-9 fieldset > .row")) {
-          let labelElem = await rowElem.evaluateHandle((elem) => elem.children[0]);
-          let labelText = await browserUtils.getText(labelElem);
-          let valueElem = await rowElem.evaluateHandle((elem) => elem.children[1]);
-          let valueText = await browserUtils.getText(valueElem);
+        const rows = [];
+        for (const rowElem of await page.$$(
+          ".content .col-sm-9 fieldset > .row"
+        )) {
+          const labelElem = await rowElem.evaluateHandle(
+            (elem) => elem.children[0]
+          );
+          const labelText = await browserUtils.getText(labelElem);
+          const valueElem = await rowElem.evaluateHandle(
+            (elem) => elem.children[1]
+          );
+          const valueText = await browserUtils.getText(valueElem);
           rows.push([labelText, valueText]);
+          await labelElem.dispose();
+          await valueElem.dispose();
         }
-        console.log(table(rows, {
-          border: getBorderCharacters("ramac"),
-        }));
+        console.log(
+          table(rows, {
+            border: getBorderCharacters("ramac"),
+          })
+        );
       }
-    } catch (err) {
-      try {
-        await browserUtils.cleanup();
-      } catch (err2) {
-        console.error(err2);
-      }
-
-      throw err;
-    }
-
-    await browserUtils.cleanup();
+    }, opts);
   });
 
 export default sub;

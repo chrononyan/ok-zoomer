@@ -8,11 +8,12 @@ module.exports = {
     sourceType: "module",
   },
   ignorePatterns: ["!.*.cjs", "!.*.js", "!package.json"],
-  plugins: ["json-files"],
+  plugins: ["json-files", "simple-import-sort"],
   extends: [
     "eslint:recommended",
-    "plugin:prettier/recommended",
+    "plugin:import/recommended",
     "plugin:node/recommended",
+    "plugin:prettier/recommended",
   ],
   rules: {
     "no-process-exit": "off",
@@ -23,6 +24,7 @@ module.exports = {
         argsIgnorePattern: "^_$",
       },
     ],
+    "prefer-const": "error",
     "json-files/sort-package-json": "error",
     // rule was last updated 2019, not really a concern for Node >= 16
     "node/no-unsupported-features/es-syntax": "off",

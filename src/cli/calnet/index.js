@@ -8,5 +8,7 @@ import checkCmd from "./check.js";
 sub.addCommand(checkCmd);
 import duoEnrollCmd from "./duoEnroll.js";
 sub.addCommand(duoEnrollCmd);
+import setupCmd from "./setup.js";
+sub.addCommand(setupCmd);
 
 export default sub;

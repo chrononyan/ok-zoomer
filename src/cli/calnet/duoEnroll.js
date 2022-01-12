@@ -19,11 +19,12 @@ sub
       process.exit(1);
     }
 
-    let hotp = await duoUtils.activateDevice(qrBuf);
-    console.log(`Successfully enrolled!`);
+    const { data, hotp } = await duoUtils.activateDevice(qrBuf);
+    console.log("Successfully enrolled!");
     console.log(`HOTP URI: ${hotp.toString()}`);
+    console.log(`Device Key: ${data.pkey}`);
 
-    let config = loadConfig(opts.config);
+    const config = loadConfig(opts.config);
     config.set("calnet.duo.otpURI", hotp.toString());
     saveConfig(opts.config);
     console.log("Saved to config");

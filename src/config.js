@@ -60,13 +60,13 @@ export function loadConfig(path = DEFAULT_CONFIG_PATH) {
 
 export async function saveConfig(path = DEFAULT_CONFIG_PATH) {
   validateConfig();
-  let parser = getParser(path);
-  let obj = config.getProperties();
+  const parser = getParser(path);
+  const obj = config.getProperties();
   await fs.writeFile(path, parser.stringify(obj));
 }
 
 function getParser(path) {
-  let ext = extname(path);
+  const ext = extname(path);
   if (ext === ".toml") {
     return TOML;
   }

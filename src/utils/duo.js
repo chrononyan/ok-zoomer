@@ -3,51 +3,62 @@ import { HOTP, Secret as OTPSecret } from "otpauth";
 
 import * as qrUtils from "./qr.js";
 
-export async function activateDevice(qrBuf) {
-  let activationParams = qrUtils.decodePNG(qrBuf).toString("ascii");
-  let [activationCode, base64APIHostname] = activationParams.split("-", 2);
-  let apiHostname = Buffer.from(base64APIHostname, "base64").toString("ascii");
+const DEVICE_HEADERS = {
+  "User-Agent": "okhttp/4.9.0",
+};
+const DEVICE_INFO = {
+  app_id: "com.duosecurity.duomobile",
+  app_version: "4.4.0",
+  app_build_number: "404000",
+  full_disk_encryption: "true",
+  manufacturer: "Samsung",
+  model: "SM-G998U",
+  platform: "Android",
+  jailbroken: "false",
+  version: "12",
+  security_patch_level: "2021-12-05",
+  passcode_status: "true",
+  touchid_status: "true",
+  language: "en",
+  region: "US",
+  architecture: "arm64",
+};
 
-  let url = `https://${apiHostname}/push/v2/activation/${activationCode}`;
-  let headers = {
-    "content-type": "application/json",
-    "user-agent": "okhttp/4.9.0",
-  };
-  let body = {
-    app_id: "com.duosecurity.duomobile",
-    app_version: "4.4.0",
-    app_build_number: "404000",
-    full_disk_encryption: "true",
-    manufacturer: "Samsung",
-    model: "SM-G998U",
-    platform: "Android",
-    jailbroken: "false",
-    version: "12",
-    security_patch_level: "2021-12-05",
-    passcode_status: "true",
-    touchid_status: "true",
-    language: "en",
-    region: "US",
-    architecture: "arm64",
-  };
-  // Randomize key order
-  body = Object.fromEntries(
-    Object.entries(body).sort(() => 0.5 - Math.random())
+export async function activateDevice(qrBufOrString) {
+  let activationParams = qrBufOrString;
+  if (typeof qrBufOrString !== "string") {
+    activationParams = qrUtils.decodePNG(qrBufOrString).toString("ascii");
+  }
+  const [activationCode, base64APIHostname] = activationParams.split("-", 2);
+  const apiHostname = Buffer.from(base64APIHostname, "base64").toString(
+    "ascii"
   );
-  let res = await undici.request(url, {
+
+  const url = `https://${apiHostname}/push/v2/activation/${activationCode}`;
+  // Randomize key order
+  const body = Object.fromEntries(
+    Object.entries(DEVICE_INFO).sort(() => 0.5 - Math.random())
+  );
+  const res = await undici.request(url, {
     method: "POST",
-    headers: headers,
+    headers: {
+      ...DEVICE_HEADERS,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(body),
   });
-  let resBody = await res.body.json();
-  let activationData = resBody.response;
+  const resBody = await res.body.json();
+  const data = resBody.response;
 
-  let hotp = new HOTP({
+  const hotp = new HOTP({
     algorithm: "sha1",
     counter: 0,
     issuer: "Duo",
-    label: `Duo: ${activationData.customer_name}`,
-    secret: OTPSecret.fromLatin1(activationData.hotp_secret),
+    label: `Duo: ${data.customer_name}`,
+    secret: OTPSecret.fromLatin1(data.hotp_secret),
   });
-  return hotp;
+  return {
+    hotp,
+    data,
+  };
 }
