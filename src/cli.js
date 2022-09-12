@@ -192,6 +192,18 @@ async function scheduleMeeting(entry) {
     await page.evaluate((elem) => elem.click(), autoRecCloudLabel);
   }
   {
+    const altHostsInput = await page.waitForXPath("//div[contains(@class, 'optional-options')]//input[@aria-label='Alternative Hosts,Enter username or email addresses']");
+    await altHostsInput.type(entry.email);
+    const altHostOption = await page.waitForXPath(
+      "//div[contains(@class, 'optional-options')]//dd[contains(@class, 'zm-select-dropdown__item')]"
+    );
+    let altHostOptionClasses = await page.evaluate((elem) => elem.className, altHostOption);
+    if (altHostOptionClasses.includes("disabled") || !altHostOptionClasses.includes("option-item")) throw new Error(`Cannot add ${entry.email} as an alternate host`);
+    let altHostOptionText = await page.evaluate((elem) => elem.textContent, altHostOption);
+    if (!altHostOptionText.includes(entry.email)) throw new Error(`Cannot enter ${entry.email} as an alternate host`);
+    await page.evaluate((elem) => elem.click(), altHostOption);
+  }
+  {
     await page.$$eval(
       "xpath/.//div[contains(@class, 'zm-sticky')]//button[contains(., 'Save') and not(@disabled)]",
       (elems) => elems.forEach((elem) => elem.click())
