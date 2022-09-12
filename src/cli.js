@@ -80,7 +80,10 @@ try {
 let browser;
 let page;
 async function initBrowser() {
-  browser = await puppeteer.launch({ headless: false });
+  browser = await puppeteer.launch({
+    defaultViewport: null,
+    headless: false,
+  });
   page = (await browser.pages())[0] || (await browser.newPage());
 
   let authPage;
