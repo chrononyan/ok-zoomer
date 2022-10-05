@@ -254,16 +254,18 @@ async function scheduleMeeting(entry) {
       );
       setCheckbox(authSecurityLabel, true);
     }
-    await page.evaluate(scrollToBottom);
-    {
-      console.log("Revealing additional options");
-      const optionsButton = await page.waitForSelector(
-        ".optional-options button"
-      );
-      const text = await page.evaluate((elem) => elem.innerText, optionsButton);
-      if (text !== "Hide")
-        await page.evaluate((elem) => elem.click(), optionsButton);
-    }
+  }
+  await page.evaluate(scrollToBottom);
+  {
+    console.log("Revealing additional options");
+    const optionsButton = await page.waitForSelector(
+      ".optional-options button"
+    );
+    const text = await page.evaluate((elem) => elem.innerText, optionsButton);
+    if (text !== "Hide")
+      await page.evaluate((elem) => elem.click(), optionsButton);
+  }
+  if (!options.templateId) {
     await page.evaluate(scrollToBottom);
     {
       console.log("Setting: join anytime");
@@ -290,21 +292,21 @@ async function scheduleMeeting(entry) {
       );
       await page.evaluate((elem) => elem.click(), autoRecCloudLabel);
     }
-    await page.evaluate(scrollToBottom);
-    {
-      console.log("Setting: alternative hosts");
-      const altHostsInput = await page.waitForXPath("//div[contains(@class, 'optional-options')]//input[@aria-label='Alternative Hosts,Enter username or email addresses']");
-      await altHostsInput.type(entry.email);
-      const altHostOption = await page.waitForXPath(
-        "//div[contains(@class, 'optional-options')]//dd[contains(@class, 'zm-select-dropdown__item')]"
-      );
-      let altHostOptionClasses = await page.evaluate((elem) => elem.className, altHostOption);
-      if (altHostOptionClasses.includes("disabled") || !altHostOptionClasses.includes("option-item")) throw new Error(`Cannot add ${entry.email} as an alternate host`);
-      let altHostOptionText = await page.evaluate((elem) => elem.textContent, altHostOption);
-      if (!altHostOptionText.includes(entry.email)) throw new Error(`Cannot enter ${entry.email} as an alternate host`);
-      await page.evaluate((elem) => elem.click(), altHostOption);
-      await page.evaluate((elem) => elem.blur(), altHostsInput);
-    }
+  }
+  await page.evaluate(scrollToBottom);
+  {
+    console.log("Setting: alternative hosts");
+    const altHostsInput = await page.waitForXPath("//div[contains(@class, 'optional-options')]//input[@aria-label='Alternative Hosts,Enter username or email addresses']");
+    await altHostsInput.type(entry.email);
+    const altHostOption = await page.waitForXPath(
+      "//div[contains(@class, 'optional-options')]//dd[contains(@class, 'zm-select-dropdown__item')]"
+    );
+    let altHostOptionClasses = await page.evaluate((elem) => elem.className, altHostOption);
+    if (altHostOptionClasses.includes("disabled") || !altHostOptionClasses.includes("option-item")) throw new Error(`Cannot add ${entry.email} as an alternate host`);
+    let altHostOptionText = await page.evaluate((elem) => elem.textContent, altHostOption);
+    if (!altHostOptionText.includes(entry.email)) throw new Error(`Cannot enter ${entry.email} as an alternate host`);
+    await page.evaluate((elem) => elem.click(), altHostOption);
+    await page.evaluate((elem) => elem.blur(), altHostsInput);
   }
   {
     console.log("Saving meeting");
