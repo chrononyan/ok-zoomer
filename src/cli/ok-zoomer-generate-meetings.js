@@ -16,23 +16,19 @@ program
   .option(
     "-i, --input <filename>",
     "Input CSV (requires column: Email)",
-    "roster.csv"
+    "roster.csv",
   )
   .option("-o, --output <filename>", "Output CSV", "meetings.csv")
   .option("--cookies <filename>", "Cookies cache file", "cookies.json")
-  .option(
-    "--template-id <templateId>",
-    "Meeting template ID",
-    null
-  )
+  .option("--template-id <templateId>", "Meeting template ID", null)
   .option(
     "--topic <topic>",
     "Meeting topic (available substitutions: {email})",
-    "Meeting ({email})"
+    "Meeting ({email})",
   )
   .option(
     "--description <description>",
-    "Meeting description (available substitutions: {email})"
+    "Meeting description (available substitutions: {email})",
   )
   .parse();
 
@@ -130,7 +126,7 @@ async function initBrowser() {
   }
   console.log("Logged into Zoom");
   if (!authPage) authPage = await browser.newPage();
-  let cookies = {
+  const cookies = {
     calnet: null,
     duo: null,
     duoUrl: duoUrl,
@@ -150,7 +146,7 @@ async function initBrowser() {
   await page.evaluateOnNewDocument(() => {
     setTimeout(() => {
       console.log("Injecting styles", document.head);
-      let style = document.createElement("style");
+      const style = document.createElement("style");
       style.type = "text/css";
       style.innerHTML = `
         html, body {
@@ -162,8 +158,13 @@ async function initBrowser() {
 
     setTimeout(() => {
       console.log("Blocking ancient Kaltura alert");
-      let alert = document.querySelector(".small-notice.alert-warning");
-      if (alert && alert.innerText.includes("Starting 1/6/2021, if you enable Zoom Cloud Recordings")) {
+      const alert = document.querySelector(".small-notice.alert-warning");
+      if (
+        alert &&
+        alert.innerText.includes(
+          "Starting 1/6/2021, if you enable Zoom Cloud Recordings",
+        )
+      ) {
         alert.parentNode.remove();
       }
     }, 0);
@@ -176,17 +177,18 @@ async function sleep(ms) {
 
 async function scrollToBottom() {
   let prevScrollHeight = null;
-  while (window.scrollTop < window.scrollHeight - window.clientHeight - 100 || prevScrollHeight === null || window.scrollHeight !== prevScrollHeight) {
+  while (
+    window.scrollTop < window.scrollHeight - window.clientHeight - 100 ||
+    prevScrollHeight === null ||
+    window.scrollHeight !== prevScrollHeight
+  ) {
     if (prevScrollHeight !== null) await sleep(250);
     prevScrollHeight = window.scrollHeight;
   }
 }
 
 async function setCheckbox(wrapperElem, isChecked) {
-  const checked = await wrapperElem.$eval(
-    "input",
-    (elem) => elem.ariaChecked
-  );
+  const checked = await wrapperElem.$eval("input", (elem) => elem.ariaChecked);
   if (checked !== String(isChecked))
     await page.evaluate((elem) => elem.click(), wrapperElem);
 }
@@ -194,7 +196,11 @@ async function setCheckbox(wrapperElem, isChecked) {
 async function scheduleMeeting(entry) {
   if (!page) await initBrowser();
 
-  await page.goto(options.templateId ? `https://berkeley.zoom.us/meeting/template/${options.templateId}/schedule` : "https://berkeley.zoom.us/meeting/schedule");
+  await page.goto(
+    options.templateId
+      ? `https://berkeley.zoom.us/meeting/template/${options.templateId}/schedule`
+      : "https://berkeley.zoom.us/meeting/schedule",
+  );
 
   await page.evaluate(scrollToBottom);
   if (options.topic) {
@@ -212,7 +218,7 @@ async function scheduleMeeting(entry) {
     await descriptionInput.click({ clickCount: 3 });
     await descriptionInput.press("Backspace");
     await descriptionInput.type(
-      options.description.replace(/\{email\}/g, entry.email)
+      options.description.replace(/\{email\}/g, entry.email),
     );
   }
   await page.evaluate(scrollToBottom);
@@ -220,13 +226,13 @@ async function scheduleMeeting(entry) {
     {
       console.log("Setting: recurrence");
       const recurringLabel = await page.waitForXPath(
-        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Recurring meeting')]"
+        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Recurring meeting')]",
       );
       setCheckbox(recurringLabel, true);
       const recurrenceInput = await page.waitForSelector("#recurringType");
       await page.evaluate((elem) => elem.click(), recurrenceInput);
       const noFixedTimeOption = await page.waitForSelector(
-        "#select-item-recurringType-3"
+        "#select-item-recurringType-3",
       );
       await page.evaluate((elem) => elem.click(), noFixedTimeOption);
     }
@@ -234,7 +240,7 @@ async function scheduleMeeting(entry) {
     {
       console.log("Setting: random meeting ID");
       const automaticMeetingIdLabel = await page.waitForXPath(
-        "//span[contains(@class, 'zm-radio')]//label[contains(., 'Generate Automatically')]"
+        "//span[contains(@class, 'zm-radio')]//label[contains(., 'Generate Automatically')]",
       );
       await page.evaluate((elem) => elem.click(), automaticMeetingIdLabel);
     }
@@ -242,15 +248,15 @@ async function scheduleMeeting(entry) {
     {
       console.log("Setting: security");
       const passwordSecurityLabel = await page.waitForXPath(
-        "//div[@id='security']//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Passcode')]"
+        "//div[@id='security']//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Passcode')]",
       );
       setCheckbox(passwordSecurityLabel, false);
       const waitingRoomSecurityLabel = await page.waitForXPath(
-        "//div[@id='security']//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Waiting Room')]"
+        "//div[@id='security']//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Waiting Room')]",
       );
       setCheckbox(waitingRoomSecurityLabel, false);
       const authSecurityLabel = await page.waitForXPath(
-        "//div[@id='security']//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Require authentication')]"
+        "//div[@id='security']//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Require authentication')]",
       );
       setCheckbox(authSecurityLabel, true);
     }
@@ -259,7 +265,7 @@ async function scheduleMeeting(entry) {
   {
     console.log("Revealing additional options");
     const optionsButton = await page.waitForSelector(
-      ".optional-options button"
+      ".optional-options button",
     );
     const text = await page.evaluate((elem) => elem.innerText, optionsButton);
     if (text !== "Hide")
@@ -270,25 +276,25 @@ async function scheduleMeeting(entry) {
     {
       console.log("Setting: join anytime");
       const joinAnytimeLabel = await page.waitForXPath(
-        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Allow participants to join')]"
+        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Allow participants to join')]",
       );
       await setCheckbox(joinAnytimeLabel, false);
     }
     {
       console.log("Setting: mute upon entry");
       const autoMuteLabel = await page.waitForXPath(
-        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Mute participants upon entry')]"
+        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Mute participants upon entry')]",
       );
       await setCheckbox(autoMuteLabel, false);
     }
     {
       console.log("Setting: auto record");
       const autoRecLabel = await page.waitForXPath(
-        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Automatically record meeting')]"
+        "//span[contains(@class, 'zm-checkbox')]//label[contains(., 'Automatically record meeting')]",
       );
       await setCheckbox(autoRecLabel, true);
       const autoRecCloudLabel = await page.waitForXPath(
-        "//span[contains(@class, 'zm-radio')]//label[contains(., 'In the cloud')]"
+        "//span[contains(@class, 'zm-radio')]//label[contains(., 'In the cloud')]",
       );
       await page.evaluate((elem) => elem.click(), autoRecCloudLabel);
     }
@@ -296,15 +302,28 @@ async function scheduleMeeting(entry) {
   await page.evaluate(scrollToBottom);
   {
     console.log("Setting: alternative hosts");
-    const altHostsInput = await page.waitForXPath("//div[contains(@class, 'optional-options')]//input[@placeholder='Enter user name or email addresses']");
+    const altHostsInput = await page.waitForXPath(
+      "//div[contains(@class, 'optional-options')]//input[@placeholder='Enter user name or email addresses']",
+    );
     await altHostsInput.type(entry.email);
     const altHostOption = await page.waitForXPath(
-      "//div[contains(@class, 'optional-options')]//dd[contains(@class, 'zm-select-dropdown__item')]"
+      "//div[contains(@class, 'optional-options')]//dd[contains(@class, 'zm-select-dropdown__item')]",
     );
-    let altHostOptionClasses = await page.evaluate((elem) => elem.className, altHostOption);
-    if (altHostOptionClasses.includes("disabled") || !altHostOptionClasses.includes("option-item")) throw new Error(`Cannot add ${entry.email} as an alternate host`);
-    let altHostOptionText = await page.evaluate((elem) => elem.textContent, altHostOption);
-    if (!altHostOptionText.includes(entry.email)) throw new Error(`Cannot enter ${entry.email} as an alternate host`);
+    const altHostOptionClasses = await page.evaluate(
+      (elem) => elem.className,
+      altHostOption,
+    );
+    if (
+      altHostOptionClasses.includes("disabled") ||
+      !altHostOptionClasses.includes("option-item")
+    )
+      throw new Error(`Cannot add ${entry.email} as an alternate host`);
+    const altHostOptionText = await page.evaluate(
+      (elem) => elem.textContent,
+      altHostOption,
+    );
+    if (!altHostOptionText.includes(entry.email))
+      throw new Error(`Cannot enter ${entry.email} as an alternate host`);
     await page.evaluate((elem) => elem.click(), altHostOption);
     await page.evaluate((elem) => elem.blur(), altHostsInput);
   }
@@ -312,7 +331,7 @@ async function scheduleMeeting(entry) {
     console.log("Saving meeting");
     await page.$$eval(
       "xpath/.//div[contains(@class, 'zm-sticky')]//button[contains(., 'Save') and not(@disabled)]",
-      (elems) => elems.forEach((elem) => elem.click())
+      (elems) => elems.forEach((elem) => elem.click()),
     );
   }
   await page.waitForNavigation();
@@ -320,20 +339,22 @@ async function scheduleMeeting(entry) {
   {
     console.log("Finding meeting link");
     const linkElem = await page.waitForXPath(
-      "//div[@id='registration']//a[contains(., 'https://berkeley.zoom.us/j/')]"
+      "//div[@id='registration']//a[contains(., 'https://berkeley.zoom.us/j/')]",
     );
     link = await page.evaluate((elem) => elem.textContent.trim(), linkElem);
   }
   let passcode;
   {
     console.log("Finding meeting passcode");
-    const descriptionButton = await page.waitForSelector(".security-info button");
+    const descriptionButton = await page.waitForSelector(
+      ".security-info button",
+    );
     if (descriptionButton) {
       await page.evaluate((elem) => elem.click(), descriptionButton);
       const passcodeElem = await page.waitForSelector(".security-info .mgl-sm");
       passcode = await page.evaluate(
         (elem) => elem.textContent.trim(),
-        passcodeElem
+        passcodeElem,
       );
     } else {
       passcode = "";

@@ -3,6 +3,4 @@
 import { Command } from "commander";
 
 const program = new Command();
-program
-  .command("generate-meetings", "Generate Zoom meetings")
-  .parse();
+program.command("generate-meetings", "Generate Zoom meetings").parse();
