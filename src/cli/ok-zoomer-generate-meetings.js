@@ -126,7 +126,7 @@ async function initBrowser() {
       duoUrl = page.url();
       console.log(`Found Duo URL: ${duoUrl}`);
     }
-    await page.waitForNavigation();
+    await page.waitForNavigation({ timeout: 0 });
   }
   console.log("Logged into Zoom");
   if (!authPage) authPage = await browser.newPage();
@@ -296,7 +296,7 @@ async function scheduleMeeting(entry) {
   await page.evaluate(scrollToBottom);
   {
     console.log("Setting: alternative hosts");
-    const altHostsInput = await page.waitForXPath("//div[contains(@class, 'optional-options')]//input[@aria-label='Alternative Hosts,Enter username or email addresses']");
+    const altHostsInput = await page.waitForXPath("//div[contains(@class, 'optional-options')]//input[@placeholder='Enter user name or email addresses']");
     await altHostsInput.type(entry.email);
     const altHostOption = await page.waitForXPath(
       "//div[contains(@class, 'optional-options')]//dd[contains(@class, 'zm-select-dropdown__item')]"
@@ -320,15 +320,17 @@ async function scheduleMeeting(entry) {
   {
     console.log("Finding meeting link");
     const linkElem = await page.waitForXPath(
-      "//div[contains(@class, 'form-group')]//span[contains(., 'https://berkeley.zoom.us/j/')]"
+      "//div[@id='registration']//a[contains(., 'https://berkeley.zoom.us/j/')]"
     );
     link = await page.evaluate((elem) => elem.textContent.trim(), linkElem);
   }
   let passcode;
   {
     console.log("Finding meeting passcode");
-    const passcodeElem = await page.$("#displayPassword");
-    if (passcodeElem) {
+    const descriptionButton = await page.waitForSelector(".security-info button");
+    if (descriptionButton) {
+      await page.evaluate((elem) => elem.click(), descriptionButton);
+      const passcodeElem = await page.waitForSelector(".security-info .mgl-sm");
       passcode = await page.evaluate(
         (elem) => elem.textContent.trim(),
         passcodeElem
